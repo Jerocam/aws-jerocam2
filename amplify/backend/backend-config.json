@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "awsjerocam2fa1ec827": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}
