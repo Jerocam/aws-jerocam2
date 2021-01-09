@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import React, { useState, useEffect } from 'react';
 import Amplify from 'aws-amplify';
@@ -7,13 +6,31 @@ import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { API, Storage } from 'aws-amplify';
 import { listNotes } from './graphql/queries';
 import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from './graphql/mutations';
+import { Button, Container, Grid, TextField, Card, CardActionArea, CardContent, CardMedia, CardActions, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 
 Amplify.configure(config);
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    padding: '1em',
+  },
+  paper: {
+    padding: theme.spacing(3),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+  root2: {
+    padding: '2em'
+  },
+}));
+
 const initialFormState = { name: '', description: '' }
 
-function App() {
+function App () {
 
+  const classes = useStyles();
   const [notes, setNotes] = useState([]);
   const [formData, setFormData] = useState(initialFormState);
 
@@ -61,39 +78,69 @@ function App() {
 
   return (
     <div className="App">
-      <h1>My Notes App</h1>
-      <input
-        onChange={e => setFormData({ ...formData, 'name': e.target.value})}
-        placeholder="Note name"
-        value={formData.name}
-      />
-      <input
-        onChange={e => setFormData({ ...formData, 'description': e.target.value})}
-        placeholder="Note description"
-        value={formData.description}
-      />
-      <input
-        type="file"
-        onChange={onChange}
-      />
-      <button onClick={createNote}>Create Note</button>
-      <div style={{marginBottom: 30}}>
-        {
-          notes.map(note => (
-            <div key={note.id || note.name}>
-              <h2>{note.name}</h2>
-              <p>{note.description}</p>
-              <button onClick={() => deleteNote(note)}>Delete note</button>
-              {
-                note.image && <img src={note.image} style={{width: 400}} />
-              }
-            </div>
-          ))
-        }
-      </div>
-      <AmplifySignOut />
+      <Container>
+        <h1>AWS Jerocam App</h1>
+        
+          <form noValidate autoComplete="off">
+            <Grid container className={classes.root}>
+                <Grid container justify="center" spacing={3}>
+                  <Grid item>
+                    <TextField onChange={e => setFormData({ ...formData, 'name': e.target.value})} value={formData.name} label="Title" />
+                  </Grid>
+                  <Grid item>
+                    <TextField onChange={e => setFormData({ ...formData, 'description': e.target.value})} value={formData.description} label="Author" />
+                  </Grid>
+                  <Grid item>
+                    <Button component="label" variant="contained" color="default">Upload file <input type="file" hidden onChange={onChange}/></Button>
+                  </Grid>
+                  <Grid item>
+                    <Button color="secondary" variant="contained" onClick={createNote}>Create Manga</Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+          </form>
+
+        <div className={classes.root}>
+          <Grid container spacing={2}>
+          {notes.map((data, key)=>(
+            <Grid key={key} item xs={6} sm={3}>
+              <Card className={classes.paper}>
+                <CardActionArea>
+                  <CardMedia
+                    style={{height:400}}
+                    image={data.image}
+                    title={data.name}
+                  />
+                  <CardContent>
+                    <Typography gutterBottom variant="h5">
+                      {data.name}
+                    </Typography>
+                    <Typography color="textSecondary" variant="h6">
+                      {data.description}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+                <CardActions>
+                  <Button variant={'contained'} color="secondary" onClick={() => deleteNote(data)}>
+                    Delete
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+          </Grid>
+        </div>
+        
+        <div className={classes.root2}>
+          <AmplifySignOut />
+        </div>
+        
+
+      </Container>
     </div>
-  );
+  )
 }
 
+
 export default withAuthenticator(App);
+
