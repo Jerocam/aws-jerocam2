@@ -6,33 +6,55 @@ import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { API, Storage } from 'aws-amplify';
 import { listNotes } from './graphql/queries';
 import { createNote as createNoteMutation, deleteNote as deleteNoteMutation } from './graphql/mutations';
-import { Button, Container, Grid, TextField, Card, CardActionArea, CardContent, CardMedia, CardActions, Typography } from '@material-ui/core';
+import { Button, Container, Grid, TextField, Card, CardActionArea, CardContent, CardMedia, CardActions, Typography, AppBar, Toolbar, IconButton, Box } from '@material-ui/core';
+import {Pagination} from '@material-ui/lab';
 import { makeStyles } from '@material-ui/core/styles';
+import HomeIcon from '@material-ui/icons/Home';
 
 Amplify.configure(config);
 
+
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
-    padding: '1em',
+    flexGrow: 1
   },
   paper: {
     padding: theme.spacing(3),
     textAlign: 'center',
     color: theme.palette.text.secondary,
   },
-  root2: {
-    padding: '2em'
+  menuButton: {
+    marginRight: theme.spacing(2),
   },
+  title: {
+    flexGrow: 1,
+  },
+  space: {
+    marginTop: '4em',
+    marginBottom: '3em'
+  },
+  page: {
+    padding: '3em',
+  }
 }));
 
 const initialFormState = { name: '', description: '' }
 
 function App () {
-
+ 
   const classes = useStyles();
   const [notes, setNotes] = useState([]);
   const [formData, setFormData] = useState(initialFormState);
+  const itemsPerPage = 4;
+  // const [count, setCount] = React.useState(10);
+  const [page, setPage] = React.useState(1);
+  const [noOfPages] = React.useState(
+    Math.ceil( 9 / itemsPerPage)
+  );
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  }
 
   useEffect(() => {
     fetchNotes();
@@ -78,10 +100,21 @@ function App () {
 
   return (
     <div className="App">
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+              <HomeIcon />
+            </IconButton>
+            <Typography variant="h6" className={classes.title}>
+              AWS Jerocam Mangas
+            </Typography>
+            <AmplifySignOut />
+          </Toolbar>
+        </AppBar>
+      </div>
       <Container>
-        <h1>AWS Jerocam App</h1>
-        
-          <form noValidate autoComplete="off">
+          <form className={classes.space} noValidate autoComplete="off">
             <Grid container className={classes.root}>
                 <Grid container justify="center" spacing={3}>
                   <Grid item>
@@ -102,7 +135,9 @@ function App () {
 
         <div className={classes.root}>
           <Grid container spacing={2}>
-          {notes.map((data, key)=>(
+          {notes
+          .slice(((page - 1)*(itemsPerPage)), ((page)*(itemsPerPage)))
+          .map((data, key)=>(
             <Grid key={key} item xs={6} sm={3}>
               <Card className={classes.paper}>
                 <CardActionArea>
@@ -128,14 +163,21 @@ function App () {
               </Card>
             </Grid>
           ))}
-          </Grid>
+          </Grid>  
         </div>
+        <Box className={classes.page} display="flex">
+          <Box m="auto">
+            <Pagination
+              color="primary"
+              size="large" 
+              count={noOfPages}
+              page={page}
+              defaultPage={1}
+              onChange={handleChangePage}
+            />
+          </Box>
+        </Box>
         
-        <div className={classes.root2}>
-          <AmplifySignOut />
-        </div>
-        
-
       </Container>
     </div>
   )
@@ -143,4 +185,3 @@ function App () {
 
 
 export default withAuthenticator(App);
-
